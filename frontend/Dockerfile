@@ -1,13 +1,14 @@
-FROM node:16
+FROM node:20-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm install --legacy-peer-deps
+RUN npm install -g npm@latest
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE 5173
 
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev", "--", "--host"]
