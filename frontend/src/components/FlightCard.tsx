@@ -4,9 +4,10 @@ interface FlightCardProps {
   date: string;
   airline: string;
   price: string;
+  link?: string;
 }
 
-const FlightCard = ({ date, airline, price }: FlightCardProps) => {
+const FlightCard = ({ date, airline, price, link }: FlightCardProps) => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 mb-4">
@@ -19,9 +20,18 @@ const FlightCard = ({ date, airline, price }: FlightCardProps) => {
         <p className="text-2xl font-semibold text-foreground">{price}</p>
         <p className="text-xs text-muted-foreground">estimated price</p>
       </div>
-      <button className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 mt-4">
-        View details
-      </button>
+      {link ? (
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-primary hover:underline transition-colors duration-200 mt-4"
+        >
+          View details
+        </a>
+      ) : (
+        <span className="text-sm text-muted-foreground mt-4">View details</span>
+      )}
     </div>
   );
 };

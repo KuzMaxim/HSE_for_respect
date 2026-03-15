@@ -2,7 +2,7 @@ import { Car } from "lucide-react";
 
 interface TransferCardProps {
   type: string;
-  price: string;
+  price: number;
 }
 
 const TransferCard = ({ type, price }: TransferCardProps) => {

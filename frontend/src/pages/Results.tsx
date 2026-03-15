@@ -25,8 +25,8 @@ const defaultFlight = {
   price: "-",
 };
 const defaultTransfer = {
-  type: "-",
-  price: "-",
+  type: "Uber",
+  price: 2000,
 };
 
 function parseQuery(q: string) {
@@ -152,6 +152,7 @@ const Results = () => {
                   date: flight.date || defaultFlight.date,
                   airline: flight.airline || defaultFlight.airline,
                   price: flight.price || defaultFlight.price,
+                  link: flight.link || ""
                 } : defaultFlight)} />
               </div>
               <div className="pt-4 md:pt-0 md:pl-6">
@@ -161,6 +162,7 @@ const Results = () => {
                   price: hotel.price || defaultHotel.price,
                   rating: typeof hotel.rating === "number" ? hotel.rating : defaultHotel.rating,
                   features: Array.isArray(hotel.features) ? hotel.features : defaultHotel.features,
+                  link: hotel.link || ""
                 } : defaultHotel)} />
               </div>
               <div className="pt-4 md:pt-0 md:pl-6">
@@ -172,7 +174,7 @@ const Results = () => {
                 <p className="text-sm text-muted-foreground">Total estimated</p>
                 <p className="text-2xl font-semibold text-foreground">
                   {typeof hotel?.price === "number" && typeof flight?.price === "number"
-                    ? hotel.price + flight.price
+                    ? hotel.price + flight.price + defaultTransfer.price
                     : "-"}
                 </p>
               </div>
