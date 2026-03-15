@@ -26,6 +26,4 @@ Backend at http://localhost:8000
 
 ## Footage
 
-Демонстрация работы приложения (видео):
-
-<video src="assets/footage.mp4" controls width="600">Your browser does not support the video tag.</video>
+Футаж в /assets/footage.mp4
