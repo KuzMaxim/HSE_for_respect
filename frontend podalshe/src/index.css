@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 36 33% 99%;
+    --foreground: 0 0% 18%;
+
+    --card: 30 18% 95%;
+    --card-foreground: 0 0% 18%;
+
+    --popover: 36 33% 99%;
+    --popover-foreground: 0 0% 18%;
+
+    --primary: 33 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 18% 95%;
+    --secondary-foreground: 0 0% 18%;
+
+    --muted: 30 10% 92%;
+    --muted-foreground: 0 0% 46%;
+
+    --accent: 33 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 10% 90%;
+    --input: 30 10% 90%;
+    --ring: 33 100% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 30 18% 95%;
+    --sidebar-foreground: 0 0% 18%;
+    --sidebar-primary: 33 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 10% 92%;
+    --sidebar-accent-foreground: 0 0% 18%;
+    --sidebar-border: 30 10% 90%;
+    --sidebar-ring: 33 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: 0.01em;
+    font-style: normal;
+  }
+
+  * {
+    font-style: normal;
+  }
+}
