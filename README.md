@@ -16,3 +16,10 @@ Backend at http://localhost:8000
 - User registration with email confirmation
 - PostgreSQL database
 - Docker deployment
+
+## Screenshots
+
+Примеры интерфейса:
+
+![Main page](assets/image1.png)
+![Results page](assets/image2.png)
