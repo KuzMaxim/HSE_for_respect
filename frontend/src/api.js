@@ -13,6 +13,7 @@ const api = axios.create({
 export async function planTrip(query) {
 	try {
 		const response = await api.post("/plan", { query });
+		console.log("API Response:", response.data);
 		return response.data;
 	} catch (error) {
 		throw new Error(

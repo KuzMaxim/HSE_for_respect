@@ -8,8 +8,8 @@ Full-stack web application with React frontend, Node.js backend, PostgreSQL data
 2. Copy `.env` and fill in your values, especially EMAIL_USER and EMAIL_PASS (use Gmail app password).
 3. Run `docker-compose up --build` to start the application.
 
-Frontend will be at http://localhost:3000
-Backend at http://localhost:5000
+Frontend will be at http://localhost:5173
+Backend at http://localhost:8000
 
 ## Features
 

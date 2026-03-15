@@ -8,24 +8,25 @@ import HotelCard from "@/components/HotelCard";
 import TransferCard from "@/components/TransferCard";
 import TripCardSkeleton from "@/components/TripCardSkeleton";
 
-const mockData = {
-  flight: {
-    date: "April 10, 2025",
-    airline: "Air France",
-    price: "€210",
-  },
-  hotel: {
-    name: "Hôtel Le Marais Étoile",
-    location: "Le Marais, Paris",
-    price: "€142",
-    rating: 4,
-    features: ["Free Wi-Fi", "Breakfast included", "City center"],
-  },
-  transfer: {
-    type: "Taxi",
-    price: "€45",
-  },
-  bookingLink: "https://www.booking.com",
+import { planTrip } from "../api";
+
+
+// Дефолтные значения для fallback
+const defaultHotel = {
+  name: "No hotel found",
+  location: "-",
+  price: "-",
+  rating: 0,
+  features: [],
+};
+const defaultFlight = {
+  date: "-",
+  airline: "-",
+  price: "-",
+};
+const defaultTransfer = {
+  type: "-",
+  price: "-",
 };
 
 function parseQuery(q: string) {
@@ -61,14 +62,33 @@ const Results = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const query = searchParams.get("q") || "";
+
   const [loading, setLoading] = useState(true);
+  const [plan, setPlan] = useState<any>(null);
+  const [hotels, setHotels] = useState<any[]>([]);
+  const [error, setError] = useState<string>("");
 
   const chips = parseQuery(query);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    setLoading(true);
+    setError("");
+    setPlan(null);
+    setHotels([]);
+    if (!query) {
+      setLoading(false);
+      return;
+    }
+    planTrip(query)
+      .then((data) => {
+        setPlan(data.plan);
+        setHotels(data.hotels?.data || []);
+      })
+      .catch((err) => {
+        setError(err.message || "Ошибка запроса");
+      })
+      .finally(() => setLoading(false));
+  }, [query]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -118,32 +138,42 @@ const Results = () => {
               <TripCardSkeleton />
             </div>
           </div>
+        ) : error ? (
+          <div className="text-red-500 text-center py-8">{error}</div>
         ) : (
           <div className="rounded-2xl border-2 border-primary bg-background p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-border">
               <div className="pt-4 md:pt-0">
-                <FlightCard {...mockData.flight} />
+                <FlightCard {...defaultFlight} />
               </div>
               <div className="pt-4 md:pt-0 md:pl-6">
-                <HotelCard {...mockData.hotel} />
+                <HotelCard {...(hotels[0] ? {
+                  name: hotels[0].hotel_name || hotels[0].name || defaultHotel.name,
+                  location: hotels[0].address || hotels[0].location || defaultHotel.location,
+                  price: hotels[0].price_breakdown?.gross_price ? `€${hotels[0].price_breakdown.gross_price}` : defaultHotel.price,
+                  rating: hotels[0].review_score ? Math.round(hotels[0].review_score) : defaultHotel.rating,
+                  features: hotels[0].hotel_amenities ? hotels[0].hotel_amenities.map((a:any)=>a.name) : defaultHotel.features,
+                } : defaultHotel)} />
               </div>
               <div className="pt-4 md:pt-0 md:pl-6">
-                <TransferCard {...mockData.transfer} />
+                <TransferCard {...defaultTransfer} />
               </div>
             </div>
             <div className="mt-6 pt-6 border-t border-border flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total estimated</p>
-                <p className="text-2xl font-semibold text-foreground">€397</p>
+                <p className="text-2xl font-semibold text-foreground">{hotels[0]?.price_breakdown?.gross_price ? `€${hotels[0].price_breakdown.gross_price}` : "-"}</p>
               </div>
-              <a
-                href={mockData.bookingLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-primary text-primary-foreground text-sm font-medium px-8 py-3 rounded-full hover:opacity-90 transition-opacity duration-200"
-              >
-                Book now
-              </a>
+              {hotels[0]?.url && (
+                <a
+                  href={hotels[0].url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-primary text-primary-foreground text-sm font-medium px-8 py-3 rounded-full hover:opacity-90 transition-opacity duration-200"
+                >
+                  Book now
+                </a>
+              )}
             </div>
           </div>
         )}

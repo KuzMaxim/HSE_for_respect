@@ -1,14 +1,8 @@
+# Dockerfile for Vite + React/TS frontend (dev mode)
 FROM node:20-alpine
-
 WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm install --legacy-peer-deps
-RUN npm install -g npm@latest
-
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
-
 EXPOSE 5173
-
 CMD ["npm", "run", "dev", "--", "--host"]
