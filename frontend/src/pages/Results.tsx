@@ -65,7 +65,7 @@ const Results = () => {
 
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<any>(null);
-  const [hotels, setHotels] = useState<any[]>([]);
+  const [hotels, setHotels] = useState<any>([]);
   const [error, setError] = useState<string>("");
 
   const chips = parseQuery(query);
@@ -82,7 +82,7 @@ const Results = () => {
     planTrip(query)
       .then((data) => {
         setPlan(data.plan);
-        setHotels(data.hotels?.data || []);
+        setHotels(data.hotels || []);
       })
       .catch((err) => {
         setError(err.message || "Ошибка запроса");
@@ -147,12 +147,12 @@ const Results = () => {
                 <FlightCard {...defaultFlight} />
               </div>
               <div className="pt-4 md:pt-0 md:pl-6">
-                <HotelCard {...(hotels[0] ? {
-                  name: hotels[0].hotel_name || hotels[0].name || defaultHotel.name,
-                  location: hotels[0].address || hotels[0].location || defaultHotel.location,
-                  price: hotels[0].price_breakdown?.gross_price ? `€${hotels[0].price_breakdown.gross_price}` : defaultHotel.price,
-                  rating: hotels[0].review_score ? Math.round(hotels[0].review_score) : defaultHotel.rating,
-                  features: hotels[0].hotel_amenities ? hotels[0].hotel_amenities.map((a:any)=>a.name) : defaultHotel.features,
+                <HotelCard {...(hotels ? {
+                  name: hotels.name || defaultHotel.name,
+                  location: hotels.location || defaultHotel.location,
+                  price: hotels.price || defaultHotel.price,
+                  rating: typeof hotels.rating === "number" ? hotels.rating : defaultHotel.rating,
+                  features: Array.isArray(hotels.features) ? hotels.features : defaultHotel.features,
                 } : defaultHotel)} />
               </div>
               <div className="pt-4 md:pt-0 md:pl-6">
@@ -162,11 +162,11 @@ const Results = () => {
             <div className="mt-6 pt-6 border-t border-border flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total estimated</p>
-                <p className="text-2xl font-semibold text-foreground">{hotels[0]?.price_breakdown?.gross_price ? `€${hotels[0].price_breakdown.gross_price}` : "-"}</p>
+                <p className="text-2xl font-semibold text-foreground">{hotels?.price ? hotels.price : "-"}</p>
               </div>
               {hotels[0]?.url && (
                 <a
-                  href={hotels[0].url}
+                  href={hotels.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-primary text-primary-foreground text-sm font-medium px-8 py-3 rounded-full hover:opacity-90 transition-opacity duration-200"

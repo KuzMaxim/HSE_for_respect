@@ -2,8 +2,8 @@ import re, json, os
 import requests
 from config import GEMINI_API_KEY, RAPID_API_KEY
 
-# booking-com15 API (отели)
-def search_hotels(city: str, checkin: str, checkout: str, budget: int):
+
+def parse_hotels(city: str, checkin: str, checkout: str, budget: int):
     url = "https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotels"
     params = {
         "dest_id": city,
@@ -21,6 +21,35 @@ def search_hotels(city: str, checkin: str, checkout: str, budget: int):
     }
     response = requests.get(url, headers=headers, params=params)
     return response.json()
+
+# Поиск отелей через Gemini (LLM)
+def search_hotels(city: str, checkin: str, checkout: str, budget: int):
+    """
+    Использует Google Gemini для генерации списка подходящих отелей по запросу пользователя.
+    Возвращает JSON: {"hotels": [{"name": ..., "address": ..., "price": ..., "rating": ..., "features": [...], ...}, ...]}
+    """
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+    headers = {"Content-Type": "application/json"}
+    prompt = (
+        f"Найди наиболее подходящий отель в городе {city} на даты с {checkin} по {checkout} с бюджетом до {budget} рублей. "
+        "Для этого отеля укажи только эти поля: name (название), location (адрес), price (цена за весь период), rating (от 0 до 5), features (список удобств). "
+        "Верни только JSON вида: {\"name\":...,\"location\":...,\"price\":...,\"rating\":...,\"features\":[]}"
+    )
+    data = {
+        "contents": [
+            {"parts": [
+                {"text": prompt}
+            ]}
+        ]
+    }
+    resp = requests.post(url, headers=headers, json=data)
+    result = resp.json()
+    try:
+        text = result["candidates"][0]["content"]["parts"][0]["text"]
+        return json.loads(text[7:-3])
+    except Exception:
+        print("Gemini hotel search error", result["candidates"][0]["content"]["parts"][0]["text"])
+        return {}
 
 
 # Google Gemini (парсинг запроса)
