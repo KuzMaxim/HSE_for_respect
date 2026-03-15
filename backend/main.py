@@ -72,6 +72,7 @@ def parse_user_query(query: str) -> dict:
     }
     resp = requests.post(url, headers=headers, json=data)
     result = resp.json()
+    print(f"OpenAI API Response: {result}")
     try:
         content = result["choices"][0]["message"]["content"]
         return eval(content) if isinstance(content, str) else content

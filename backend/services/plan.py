@@ -1,8 +1,6 @@
-import os
+import re, json, os
 import requests
-
-RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY", "")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+from config import GEMINI_API_KEY, RAPID_API_KEY
 
 # booking-com15 API (отели)
 def search_hotels(city: str, checkin: str, checkout: str, budget: int):
@@ -18,39 +16,47 @@ def search_hotels(city: str, checkin: str, checkout: str, budget: int):
         "room_qty": 1
     }
     headers = {
-        "X-RapidAPI-Key": RAPIDAPI_KEY,
+        "X-RapidAPI-Key": RAPID_API_KEY,
         "X-RapidAPI-Host": "booking-com15.p.rapidapi.com"
     }
     response = requests.get(url, headers=headers, params=params)
     return response.json()
 
-# OpenAI GPT-4 (парсинг запроса)
+
+# Google Gemini (парсинг запроса)
 def parse_user_query(query: str):
-    url = "https://api.openai.com/v1/chat/completions"
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json"
     }
-    messages = [
-        {"role": "system", "content": "Ты помощник по планированию путешествий. Извлеки город, даты и бюджет из запроса пользователя. Верни JSON с ключами: city, checkin, checkout, budget."},
-        {"role": "user", "content": query}
-    ]
+    prompt = (
+        "Ты помощник по планированию путешествий. "
+        "Извлеки город, даты и бюджет из запроса пользователя. "
+        "Верни только JSON с ключами: city, checkin, checkout, budget. "
+        "Пример: {\"city\": \"Москва\", \"checkin\": \"2024-06-01\", \"checkout\": \"2024-06-07\", \"budget\": 100000}"
+    )
     data = {
-        "model": "gpt-4",
-        "messages": messages,
-        "max_tokens": 100,
-        "temperature": 0.2
+        "contents": [
+            {"parts": [
+                {"text": prompt + "\nЗапрос пользователя: " + query}
+            ]}
+        ]
     }
     resp = requests.post(url, headers=headers, json=data)
     result = resp.json()
     try:
-        content = result["choices"][0]["message"]["content"]
-        return eval(content) if isinstance(content, str) else content
+        text = result["candidates"][0]["content"]["parts"][0]["text"]
+        match = re.search(r"\{[\s\S]*?\}", text)
+        if match:
+            return json.loads(match.group(0))
+        return {}
     except Exception:
+        print("Gemini parse error", result)
         return {}
 
 async def plan_trip_service(query: str):
     parsed = parse_user_query(query)
+    print(f"Parsed query: {parsed}")
     city = parsed.get("city", "Moscow")
     checkin = parsed.get("checkin", "2024-06-01")
     checkout = parsed.get("checkout", "2024-06-07")
