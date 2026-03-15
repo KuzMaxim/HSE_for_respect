@@ -83,12 +83,35 @@ def parse_user_query(query: str):
         print("Gemini parse error", result)
         return {}
 
+
 async def plan_trip_service(query: str):
-    parsed = parse_user_query(query)
-    print(f"Parsed query: {parsed}")
-    city = parsed.get("city", "Moscow")
-    checkin = parsed.get("checkin", "2024-06-01")
-    checkout = parsed.get("checkout", "2024-06-07")
-    budget = int(parsed.get("budget", 100000))
-    hotels = search_hotels(city, checkin, checkout, budget)
-    return {"plan": {"city": city, "checkin": checkin, "checkout": checkout, "budget": budget}, "hotels": hotels}
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+    headers = {"Content-Type": "application/json"}
+    prompt = (
+        "Ты помощник по планированию путешествий. "
+        "Пользователь вводит запрос на естественном языке, например: 'Составь мне тур в Сочи на 10-15 июня с бюджетом 50000'. "
+        "1. Извлеки из запроса город (city), даты (checkin, checkout) и бюджет (budget, число в рублях). "
+        "2. Подбери самый подходящий рейс из Москвы в этот город на эти даты с этим бюджетом. "
+        "Для этого рейса укажи только эти поля: date, airline, price."
+        "3. Подбери самый подходящий отель в этом городе на эти даты с этим бюджетом. "
+        "Для этого отеля укажи только эти поля: name (название), location (адрес), price (цена за весь период), rating (от 0 до 5), features (список удобств). "
+        "Верни только JSON вида: {\"plan\":{\"city\":...,\"checkin\":...,\"checkout\":...,\"budget\":...}, "
+        "\"hotel\": {\"name\":...,\"location\":...,\"price\":...,\"rating\":...,\"features\":[]}, "
+        "\"flight\": {\"date\":...,\"airline\":...,\"price\":...}}}"
+        "\nЗапрос пользователя: " + query
+    )
+    data = {
+        "contents": [
+            {"parts": [
+                {"text": prompt}
+            ]}
+        ]
+    }
+    resp = requests.post(url, headers=headers, json=data)
+    result = resp.json()
+    try:
+        text = result["candidates"][0]["content"]["parts"][0]["text"]
+        return json.loads(text[7:-3])
+    except Exception:
+        print("Gemini plan_trip_service error", result["candidates"][0]["content"]["parts"][0]["text"])
+        return {}

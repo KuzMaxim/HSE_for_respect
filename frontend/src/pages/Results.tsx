@@ -58,6 +58,7 @@ function parseQuery(q: string) {
   return chips.length > 0 ? chips : ["Custom search"];
 }
 
+
 const Results = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -65,7 +66,8 @@ const Results = () => {
 
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<any>(null);
-  const [hotels, setHotels] = useState<any>([]);
+  const [hotel, setHotel] = useState<any>(null);
+  const [flight, setFlight] = useState<any>(null);
   const [error, setError] = useState<string>("");
 
   const chips = parseQuery(query);
@@ -74,7 +76,8 @@ const Results = () => {
     setLoading(true);
     setError("");
     setPlan(null);
-    setHotels([]);
+    setHotel(null);
+    setFlight(null);
     if (!query) {
       setLoading(false);
       return;
@@ -82,7 +85,8 @@ const Results = () => {
     planTrip(query)
       .then((data) => {
         setPlan(data.plan);
-        setHotels(data.hotels || []);
+        setHotel(data.hotel || null);
+        setFlight(data.flight || null);
       })
       .catch((err) => {
         setError(err.message || "Ошибка запроса");
@@ -144,15 +148,19 @@ const Results = () => {
           <div className="rounded-2xl border-2 border-primary bg-background p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-border">
               <div className="pt-4 md:pt-0">
-                <FlightCard {...defaultFlight} />
+                <FlightCard {...(flight ? {
+                  date: flight.date || defaultFlight.date,
+                  airline: flight.airline || defaultFlight.airline,
+                  price: flight.price || defaultFlight.price,
+                } : defaultFlight)} />
               </div>
               <div className="pt-4 md:pt-0 md:pl-6">
-                <HotelCard {...(hotels ? {
-                  name: hotels.name || defaultHotel.name,
-                  location: hotels.location || defaultHotel.location,
-                  price: hotels.price || defaultHotel.price,
-                  rating: typeof hotels.rating === "number" ? hotels.rating : defaultHotel.rating,
-                  features: Array.isArray(hotels.features) ? hotels.features : defaultHotel.features,
+                <HotelCard {...(hotel ? {
+                  name: hotel.name || defaultHotel.name,
+                  location: hotel.location || defaultHotel.location,
+                  price: hotel.price || defaultHotel.price,
+                  rating: typeof hotel.rating === "number" ? hotel.rating : defaultHotel.rating,
+                  features: Array.isArray(hotel.features) ? hotel.features : defaultHotel.features,
                 } : defaultHotel)} />
               </div>
               <div className="pt-4 md:pt-0 md:pl-6">
@@ -162,18 +170,13 @@ const Results = () => {
             <div className="mt-6 pt-6 border-t border-border flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total estimated</p>
-                <p className="text-2xl font-semibold text-foreground">{hotels?.price ? hotels.price : "-"}</p>
+                <p className="text-2xl font-semibold text-foreground">
+                  {typeof hotel?.price === "number" && typeof flight?.price === "number"
+                    ? hotel.price + flight.price
+                    : "-"}
+                </p>
               </div>
-              {hotels[0]?.url && (
-                <a
-                  href={hotels.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-primary text-primary-foreground text-sm font-medium px-8 py-3 rounded-full hover:opacity-90 transition-opacity duration-200"
-                >
-                  Book now
-                </a>
-              )}
+              {/* Кнопка бронирования можно добавить, если появится booking_url */}
             </div>
           </div>
         )}
